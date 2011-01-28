@@ -17,6 +17,7 @@ if [ $ZIP ]; then
 fi
 cd ..
 
+exit                            # chrome only :)
 
 # opera unite
 echo "*** Creating .ua"
