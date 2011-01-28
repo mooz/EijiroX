@@ -2,18 +2,6 @@ var KeyHandler = {
     actions: {},
     keyMap: {},
 
-    addAction: function (name, func) {
-        this.actions[name] = func;
-    },
-
-    addKeyBind: function (name, action) {
-        this.keyMap[name] = action;
-    },
-
-    isCharacterKey: function (ev) {
-        return ev.keyCode >= 48 && ev.keyCode <= 90;
-    },
-
     // https://github.com/decklin/yakshave/blob/master/yakshave.js
     keyCodeMap: {
         3: '<Cancel>',
@@ -133,6 +121,33 @@ var KeyHandler = {
         224: '<Meta>'
     },
 
+    // ============================================================ //
+
+    addAction: function (name, func) {
+        this.actions[name] = func;
+    },
+
+    addKeyBind: function (name, action) {
+        this.keyMap[name] = action;
+    },
+
+    // ============================================================ //
+
+    isCharacterKey: function (ev) {
+        return ev.keyCode >= 48 && ev.keyCode <= 90 &&
+            !this.modifiedByControl(ev) && !this.modifiedByMeta(ev);
+    },
+
+    modifiedByControl: function (ev) {
+        return ev.ctrlKey || ev.commandKey;
+    },
+
+    modifiedByMeta: function (ev) {
+        return ev.altKey || ev.metaKey;
+    },
+
+    // ============================================================ //
+
     keyEventToString: function (ev) {
         var keyStr;
 
@@ -141,19 +156,20 @@ var KeyHandler = {
         if (!keyStr)
             return null;
 
-        keyStr = (this.getModifier() || "") + keyStr;
+        if (ev.shiftKey && this.isCharacterKey(ev))
+            keyStr = keyStr.toUpperCase();
 
-        return keyStr;
+        return this.getModifier(ev) + keyStr;
     },
 
-    getModifier: function () {
+    getModifier: function (ev) {
         var modifier = "";
 
-        for (var mod in this.modifierStatus) {
-            if (this.modifierStatus.hasOwnProperty(mod) && this.modifierStatus[mod]) {
-                modifier = mod + "-" + modifier;
-            }
-        }
+        if (this.modifiedByMeta(ev))
+            modifier = "M-" + modifier;
+
+        if (this.modifiedByControl(ev))
+            modifier = "C-" + modifier;
 
         return modifier;
     },
@@ -175,12 +191,6 @@ var KeyHandler = {
         ev.preventDefault();
     },
 
-    modifierStatus: {
-        C: false,                 // control
-        M: false,                 // alt
-        S: false                  // shift
-    },
-
     modifierMap: {
         16  : "S",              // shit
         17  : "C",              // control
@@ -188,35 +198,18 @@ var KeyHandler = {
         224 : "M"               // meta
     },
 
-    handleKeyUp: function (ev) {
-        if (this.modifierMap.hasOwnProperty(ev.keyCode)) {
-            this.modifierStatus[this.modifierMap[ev.keyCode]] = false;
-            console.log("Modifier released " + this.modifierMap[ev.keyCode]);
-        }
-    },
-
     handleKeyDown: function (ev) {
-        if (this.modifierMap.hasOwnProperty(ev.keyCode)) {
-            // handle modifier
-            console.log("Modifier pressed " + this.modifierMap[ev.keyCode]);
-            this.modifierStatus[this.modifierMap[ev.keyCode]] = true;
-        } else {
-            // normal
-            var keyStr = this.keyEventToString(ev);
+        var keyStr = this.keyEventToString(ev);
 
-            console.log("Key Pressed " + keyStr);
+        if (this.keyMap.hasOwnProperty(keyStr)) {
+            var action = this.actions[this.keyMap[keyStr]];
 
-            if (this.keyMap.hasOwnProperty(keyStr)) {
-                var action = this.actions[this.keyMap[keyStr]];
+            if (action) {
+                if (this.isCharacterKey(ev) && this.inEditMode())
+                    return;
 
-                if (action) {
-                    if ((this.isCharacterKey(ev) && !this.getModifier()) && this.inEditMode()) {
-                        return;
-                    }
-
-                    this.killEvent(ev);
-                    action();
-                }
+                this.killEvent(ev);
+                action();
             }
         }
     },
@@ -226,13 +219,8 @@ var KeyHandler = {
         case "keydown":
             this.handleKeyDown(ev);
             break;
-        case "keyup":
-            this.handleKeyUp(ev);
-            break;
         }
     }
 };
 
 document.addEventListener('keydown', KeyHandler, true);
-document.addEventListener('keyup', KeyHandler, true);
-
