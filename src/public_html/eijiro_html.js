@@ -15,7 +15,7 @@ var linesToHtml = (function () {
     var trans = m[3].split(re_sep);
     return '<dt class="entry-box">' +
         '<span class="entry">' + highlightQuery(query, makeImplicitSearchLinks(htmlEscape(word))) + "</span>" +
-        (!kind ? '' : ' <span class="kind"><span class="bracket">{</span>' + htmlEscape(kind) + '<span class="bracket">}</span></span>') + 
+        (!kind ? '' : ' <span class="kind"><span class="bracket">{</span>' + htmlEscape(kind) + '<span class="bracket">}</span></span>') +
         ' <span class="separator">:</span> ' +
       '</dt>' +
       trans.map(function(t) {
@@ -155,7 +155,7 @@ var linesToHtml = (function () {
         }
       }
       // "density" => 密集（度）｛みっしゅう（ど）｝
-      var re = RegExp('(.*?)(' + 
+      var re = RegExp('(.*?)(' +
         ruby.split(re_additional).map(function(m){
           return !m.length ? '' : (m.charAt(0) === '（' ? '（' + re_kanji + '）' : re_kanji);
         }).join('') + ')$'
@@ -208,7 +208,7 @@ var linesToHtml = (function () {
   */
   function linesToHtml(lines, query) {
     return lines.map(function(line) {
-      return parseLine(line, query);
+        return "<div class=\"result\">" + parseLine(line, query) + "</div>";
     }).join('\n');
   }
 
