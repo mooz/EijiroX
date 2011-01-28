@@ -68,6 +68,12 @@ h1 {
   text-decoration: underline;
 }
 
+#results .word {
+ margin      : 3px 0;
+ font-size   : 130%;
+ font-weight : bold;
+}
+
 #results .entry {
   font-weight: bold;
 }
@@ -98,8 +104,23 @@ h1 {
 }
 
 #results .translation {
-  display:list-item;
-  list-style-type:square;
+  display         : list-item;
+  /* list-style-type : square; */
+  list-style-type : none;
+}
+
+#results ul {
+  padding-left : 3px;
+}
+
+#results ol {
+  padding-left : 30px;
+  margin       : 0;
+}
+
+#results .ol-level {
+  display      : block;
+  padding-left : 20px;
 }
 
 @font-face{

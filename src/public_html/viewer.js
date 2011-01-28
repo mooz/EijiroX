@@ -74,7 +74,7 @@ window.addEventListener('mousemove', select, true);
 window.addEventListener('mousedown', mouseDown, true);
 window.addEventListener('mouseup', mouseUp, true);
 
-var searchDelay = Debounce(80); // hold 80 ms before searching (when typed in)
+var searchDelay = Debounce(150); // hold 80 ms before searching (when typed in)
 
 var query_string; // serialized query option (will become URL fragment under certain conditions)
 

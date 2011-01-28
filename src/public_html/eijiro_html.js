@@ -3,24 +3,41 @@ var linesToHtml = (function () {
   * convert eijiro line to <dt> <dd> pair
   */
   var re_line = /■(.*?)(?:  ?{(.*?)})? : (.*)/;
-  var re_sep = /■・|●/;
+  var re_sep  = /■・|●/;
+  var re_kind = /(?:(\d+)-)?([^\d-]+)?(?:-?(\d+))?/;
+
   function parseLine(line, query) {
     var m = re_line.exec(line);
-    if (!m) {
-      console.log(m);
-      return '';
-    }
+    if (!m)
+      return null;
+
     var word = m[1];
     var kind = m[2];
+
+    if (kind) {
+      var mk = re_kind.exec(kind);
+
+      var bnum  = mk[1];
+      var cat   = mk[2];
+      var snum  = mk[3];
+    }
+
     var trans = m[3].split(re_sep);
-    return '<dt class="entry-box">' +
-        '<span class="entry">' + highlightQuery(query, makeImplicitSearchLinks(htmlEscape(word))) + "</span>" +
-        (!kind ? '' : ' <span class="kind"><span class="bracket">{</span>' + htmlEscape(kind) + '<span class="bracket">}</span></span>') +
-        ' <span class="separator">:</span> ' +
-      '</dt>' +
-      trans.map(function(t) {
-          return '<dd class="translation">' + parseTranslation(t) + '</dd>';
-        }).join('');
+
+    var context = {
+      word  : word,
+      kind  : kind,
+      bnum  : bnum,
+      cat   : cat,
+      snum  : snum
+    };
+
+    // set true to the context.trivial when `trans` is trivial
+    context.trans = "<ul>" + trans.map(function(t) {
+      return '<li class="translation">' + parseTranslation(t, context) + '</li>';
+    }).join('') + "</ul>";
+
+    return context;
   }
 
   /*
@@ -88,8 +105,10 @@ var linesToHtml = (function () {
   var re_semicolon = / *; */;
   var re_url = /【URL】([^ ]+(?: ; (?:[^ ]+))*)/g;
   var re_bracket = /([【〈])(.*?)([】〉])/g;
-  function parseTranslation(text) {
+
+  function parseTranslation(text, context) {
     if (re_trivial.test(text)) {
+      context.trivial = true;
       return htmlEscape(text)
         .replace(re_henka, makeImplicitSearchLinks)
         .replace(re_hatsuon, function($0, $1, $2) {
@@ -106,7 +125,7 @@ var linesToHtml = (function () {
     }
     if (re_redirect.test(text)) {
       return text.replace(re_redirect, function(_, word) {
-          return '&lt;→<a title="'+htmlEscape(word)+'" href="#" class="explicit searchlink">'+htmlEscape(word)+'</a>&gt;'
+          return '&lt;→<a title="'+htmlEscape(word)+'" href="#" class="explicit searchlink">'+htmlEscape(word)+'</a>&gt;';
         });
     }
     if (text.indexOf('＝') === 0) {
@@ -207,9 +226,93 @@ var linesToHtml = (function () {
   * main body
   */
   function linesToHtml(lines, query) {
-    return lines.map(function(line) {
-        return "<div class=\"result\">" + parseLine(line, query) + "</div>";
-    }).join('\n');
+    var buffer      = [];
+    var catBuffer   = [];
+    var transBuffer = [];
+
+    var currentWord = null;
+    var currentCat  = null;
+
+    function createEntryTitle(res, query) {
+      return '<dt class="entry-box">' +
+        '<span class="entry">' + highlightQuery(query, makeImplicitSearchLinks(htmlEscape(res.word))) + "</span>" +
+        ' <span class="kind"><span class="bracket">{</span>'
+        + htmlEscape(res.cat)
+        + '<span class="bracket">}</span></span>' +
+        ' <span class="separator">:</span> ' +
+        '</dt>';
+    }
+
+    function createSingleTrans(trans) {
+      return "<span class=\"ol-level\">" + trans + "</span>";
+    }
+
+    try {
+      for (var i = 0, len = lines.length; i < len; ++i) {
+        var line = lines[i];
+
+        var res = parseLine(line, query);
+
+        if (!res) {
+          currentWord = currentCat = null;
+          continue;
+        }
+
+        if (currentWord !== res.word) {
+          // end of the current word
+          if (catBuffer.length) {
+            buffer.push(catBuffer.join(""));
+            catBuffer.length = 0;
+          }
+
+          // begin new word
+          currentWord = res.word;
+          console.log("begin " + currentWord);
+          buffer.push("<p class=\"word\">" + highlightQuery(
+            query,
+            makeImplicitSearchLinks(htmlEscape(currentWord))
+          ) + "</p>");
+        }
+
+        if (!res.cat || currentCat !== res.cat) {
+          // end the current kind
+          if (transBuffer.length) {
+            catBuffer.push('<span class="kind">' + htmlEscape(currentCat) + '</span>');
+
+            catBuffer.push(transBuffer.length > 1
+                           ? ("<ol>" + transBuffer.map(function (trans) {
+                             return "<li>" + trans + "</li>";
+                           }).join("\n") + "</ol>")
+                           : createSingleTrans(transBuffer[0]));
+            transBuffer.length = 0;
+          }
+
+          currentCat = res.cat;
+          console.log("begin " + currentWord + "'s " + currentCat);
+        }
+
+        if (res.cat) {
+          // has kind
+          transBuffer.push(res.trans);
+        } else {
+          // no kind
+          if (res.trivial) {
+            // trivial must be the first
+            catBuffer.unshift(res.trans);
+          } else {
+            catBuffer.push(createSingleTrans(res.trans));
+          }
+        }
+      }
+    } catch (x) {
+      console.log("error :: " + x);
+    }
+
+    // XXX: really?
+    if (catBuffer.length)
+      buffer.push(catBuffer.join(""));
+
+    return buffer.join("\n");
   }
 
   return linesToHtml;
