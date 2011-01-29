@@ -14,5 +14,5 @@
   },
   "background_page": "index.html",
   "options_page": "public_html/index.html",
-  "permissions": ["unlimitedStorage", "tabs", "http://*/*", "http://*/*"]
+  "permissions": ["unlimitedStorage", "notifications", "tabs", "http://*/*", "http://*/*"]
 }
