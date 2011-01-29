@@ -162,3 +162,39 @@ h1 {
   opacity: 1;
   color: black;
 }
+
+/* ============================================================
+   Shortcut key
+   ============================================================ */
+
+#shortcutkey-configuration hr {
+    border       : 1px solid #939393;
+    border-width : 1px 0 0 0;
+}
+
+#shortcutkey-configuration {
+    padding : 4px;
+}
+
+#shortcutkey-configuration table {
+    border      : 1px solid #bfbfbf;
+    margin-left : 10px;
+}
+
+#shortcutkey-configuration tr {
+    padding : 0;
+}
+
+#shortcutkey-configuration tr:nth-child(odd) {
+    background-color : #eeebf0;
+}
+
+#shortcutkey-configuration td {
+    padding : 2px 8px;
+}
+
+/* key */
+#shortcutkey-configuration td:nth-child(1) {
+    font-weight : bold;
+    font-family : monospace;
+}

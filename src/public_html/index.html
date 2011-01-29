@@ -48,16 +48,16 @@
       <div id="shortcutkey-configuration">
           <div id="shortcutkey-add-area">
               <label for="shortcutkey-key"></label>
-              <input type="text" id="shortcutkey-key" name="shortcutkey-key" value="" />
-              <select name="example" id="shortcutkey-actions">
-                  <option value="add">サンプル1</option>
-                  <option value="notice">サンプル2</option>
-                  <option value="huga">サンプル3</option>
+              <input type="text" id="shortcutkey-key" name="shortcutkey-key" value="" placeholder="キーを入力して下さい" />
+              <select name="shortcutkey-actions" id="shortcutkey-actions">
               </select>
-              <button>追加</button>
+              <button id="shortcutkey-add">追加</button>
           </div>
+          <hr />
           <table id="shortcutkey-list-area">
           </table>
+          <hr />
+          <button id="shortcutkey-delete-all">全てのショートカットキーを削除</button>
       </div>
     </div>
     <div id="main">
@@ -76,7 +76,8 @@
     <script src="opera.js"></script>
 
     <script src="shortcutkey/keyhandler.js"></script>
-    <script src="shortcutkey/actions.js"></script>
-    <script src="shortcutkey/setup_shortcutkeys.js"></script>
+    <script src="shortcutkey/action.js"></script>
+    <script src="shortcutkey/shortcutkey.js"></script>
+    <script src="shortcutkey/defaults.js"></script>
   </body>
 </html>

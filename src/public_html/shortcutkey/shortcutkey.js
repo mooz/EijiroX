@@ -1,15 +1,32 @@
 var ShortcutKey = (function () {
     var listArea     = $("shortcutkey-list-area");
     var inputKeyArea = $("shortcutkey-key");
+    var addButton    = $("shortcutkey-add");
 
     var keyElements = {};
+
+    addButton.addEventListener("click", function (ev) {
+        if (ev.button !== 0)
+            return;
+
+        if (!inputKeyArea.value)
+            return alert("キーが入力されていません");
+
+        var action = Action.getSelectedAction();
+
+        self.add(inputKeyArea.value, action.name);
+        self.save();            // XXX
+    }, false);
 
     inputKeyArea.addEventListener("keydown", function (ev) {
         inputKeyArea.value = KeyHandler.keyEventToString(ev);
         KeyHandler.killEvent(ev);
-    });
+    }, false);
 
     listArea.addEventListener("click", function (ev) {
+        if (ev.button !== 0)
+            return;
+
         var elem = ev.target;
 
         if (elem.localName !== "button" ||
@@ -17,9 +34,11 @@ var ShortcutKey = (function () {
             return;
 
         var key = elem.getAttribute("data-key");
-        if (confirm(key + " を削除してもよろしいですか？"))
+        if (confirm(key + " を削除してもよろしいですか？")) {
             deleteKeyBind(key);
-    });
+            self.save();        // XXX
+        }
+    }, false);
 
     function createKeyBindElement(key, action) {
         var elem = document.createElement("tr");
@@ -33,6 +52,10 @@ var ShortcutKey = (function () {
         var actionLabel = document.createElement("td");
         actionLabel.textContent = action;
         elem.appendChild(actionLabel);
+
+        var descLabel = document.createElement("td");
+        descLabel.textContent = Action.getDescription(action);
+        elem.appendChild(descLabel);
 
         var buttonContainer = document.createElement("td");
 
@@ -66,28 +89,27 @@ var ShortcutKey = (function () {
             }
 
             addKeyBind(key, action);
+        },
+
+        save: function () {
+            localStorage.keyMap = JSON.stringify(KeyHandler.keyMap);
+        },
+
+        restore: function () {
+            if (localStorage.keyMap) {
+                try {
+                    var keyMap = JSON.parse(keyMap);
+
+                    for (var key in keyMap) if (keyMap.hasOwnProperty(key)) {
+                        self.add(key, keyMap[key]);
+                    }
+                    return true;
+                } catch (x) {
+                    localStorage.keyMap = null;
+                }
+            }
         }
     };
 
     return self;
 })();
-
-ShortcutKey.add("C-n", "scroll_down");
-ShortcutKey.add("C-p", "scroll_up");
-
-ShortcutKey.add("C-g", "blur");
-
-ShortcutKey.add("j", "scroll_down");
-ShortcutKey.add("k", "scroll_up");
-
-ShortcutKey.add("C-v", "scroll_page_down");
-ShortcutKey.add("M-v", "scroll_page_up");
-
-ShortcutKey.add("C-c", "reset");
-ShortcutKey.add("f", "reset");
-
-ShortcutKey.add("<down>", "next_entry");
-ShortcutKey.add("<up>", "previous_entry");
-
-ShortcutKey.add("C-d", "last_entry");
-ShortcutKey.add("C-u", "first_entry");
