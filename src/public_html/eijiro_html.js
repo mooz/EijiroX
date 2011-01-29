@@ -246,17 +246,22 @@ var linesToHtml = (function () {
 
     var currentWord = null;
     var currentCat  = null;
+    var currentCatN = null;
 
     function dumpCurrentWord() {
       if (wordBuffer.length) {
         buffer.push(wordBuffer.join(""));
         wordBuffer.length = 0;
       }
+
+      currentWord = null;
     }
 
     function dumpCurrentCat() {
       if (transBuffer.length) {
-        wordBuffer.push('<span class="kind">' + htmlEscape(currentCat) + '</span>');
+        wordBuffer.push('<span class="kind">' + htmlEscape(
+          currentCatN ? currentCatN + "-" + currentCat : currentCat
+        ) + '</span>');
 
         wordBuffer.push(transBuffer.length > 1
                         ? ("<ol>" + transBuffer.map(function (trans) {
@@ -265,58 +270,55 @@ var linesToHtml = (function () {
                         : createSingleTrans(transBuffer[0]));
         transBuffer.length = 0;
       }
+
+      currentCat  = null;
+      currentCatN = null;
     }
 
-    try {
-      for (var i = 0, len = lines.length; i < len; ++i) {
-        var line = lines[i];
+    for (var i = 0, len = lines.length; i < len; ++i) {
+      var line = lines[i];
 
-        var res = parseLine(line, query);
+      var res = parseLine(line, query);
 
-        if (!res) {
-          currentWord = currentCat = null;
-          continue;
-        }
+      if (!res) {
+        currentWord = currentCat = null;
+        continue;
+      }
 
-        console.dir(res);
+      if (currentWord !== res.word) {
+        // end of the current word
+        dumpCurrentCat();
+        dumpCurrentWord();
 
-        if (currentWord !== res.word) {
-          // end of the current word
-          dumpCurrentCat();
-          dumpCurrentWord();
+        // begin new word
+        currentWord = res.word;
+        buffer.push("<p class=\"word\">" + highlightQuery(
+          query,
+          makeImplicitSearchLinks(htmlEscape(currentWord))
+        ) + "</p>");
+      }
 
-          // begin new word
-          currentWord = res.word;
-          buffer.push("<p class=\"word\">" + highlightQuery(
-            query,
-            makeImplicitSearchLinks(htmlEscape(currentWord))
-          ) + "</p>");
+      if (!res.cat || currentCat !== res.cat) {
+        // end of the current category
+        dumpCurrentCat();
+        // begin new category
+        currentCat = res.cat;
+        if (res.bnum)
+          currentCatN = res.bnum; // has multiple meanings
+      }
 
-          currentCat = null;
-        }
-
-        if (!res.cat || currentCat !== res.cat) {
-          // end of the current kind
-          dumpCurrentCat();
-          // begin new kind
-          currentCat = res.cat;
-        }
-
-        if (res.cat) {
-          // has kind
-          transBuffer.push(res.trans);
+      if (res.cat) {
+        // word which has category
+        transBuffer.push(res.trans);
+      } else {
+        if (res.trivial) {
+          // get up the trivial
+          wordBuffer.unshift(res.trans);
         } else {
-          // no kind
-          if (res.trivial) {
-            // trivial must be the head
-            wordBuffer.unshift(res.trans);
-          } else {
-            wordBuffer.push(createSingleTrans(res.trans));
-          }
+          // word with has no category
+          wordBuffer.push(createSingleTrans(res.trans));
         }
       }
-    } catch (x) {
-      console.log("error :: " + x);
     }
 
     dumpCurrentCat();
