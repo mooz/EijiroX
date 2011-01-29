@@ -44,6 +44,21 @@
                      onblur="searchDelay.changeWaitTime(this.value);" />
           </li>
       </ul>
+      <h2>ショートカットキー</h2>
+      <div id="shortcutkey-configuration">
+          <div id="shortcutkey-add-area">
+              <label for="shortcutkey-key"></label>
+              <input type="text" id="shortcutkey-key" name="shortcutkey-key" value="" />
+              <select name="example" id="shortcutkey-actions">
+                  <option value="add">サンプル1</option>
+                  <option value="notice">サンプル2</option>
+                  <option value="huga">サンプル3</option>
+              </select>
+              <button>追加</button>
+          </div>
+          <table id="shortcutkey-list-area">
+          </table>
+      </div>
     </div>
     <div id="main">
       <div id="inputbox">
@@ -60,8 +75,8 @@
     <script src="chrome.js"></script>
     <script src="opera.js"></script>
 
-    <script src="keyhandler.js"></script>
-    <script src="actions.js"></script>
-    <script src="keybindings.js"></script>
+    <script src="shortcutkey/keyhandler.js"></script>
+    <script src="shortcutkey/actions.js"></script>
+    <script src="shortcutkey/setup_shortcutkeys.js"></script>
   </body>
 </html>

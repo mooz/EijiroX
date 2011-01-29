@@ -17,7 +17,3 @@ KeyHandler.addKeyBind("<up>", "previous_entry");
 
 KeyHandler.addKeyBind("C-d", "last_entry");
 KeyHandler.addKeyBind("C-u", "first_entry");
-
-// KeyHandler.addKeyBind("S-<down>", "_down_selection");
-// KeyHandler.addKeyBind("S-<down>", "_down_selection");
-// KeyHandler.addKeyBind("C-p", "scroll_up");

@@ -2,6 +2,11 @@ var KeyHandler = {
     actions: {},
     keyMap: {},
 
+    configElement: $("config"),
+    isEnabled: function () {
+        return this.configElement.getAttribute("class") === "hidden";
+    },
+
     // https://github.com/decklin/yakshave/blob/master/yakshave.js
     keyCodeMap: {
         3: '<Cancel>',
@@ -208,8 +213,12 @@ var KeyHandler = {
                 if (this.isCharacterKey(ev) && this.inEditMode())
                     return;
 
-                this.killEvent(ev);
-                action();
+                if (this.isEnabled()) {
+                    this.killEvent(ev);
+                    action();
+                } else {
+                    console.log("disabled");
+                }
             }
         }
     },
