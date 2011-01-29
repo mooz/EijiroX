@@ -222,29 +222,49 @@ var linesToHtml = (function () {
     return (text+'').replace(re_htmlunsafe, function(m){return htmlEscapePattern[m];});
   }
 
+  function createEntryTitle(res, query) {
+    return '<dt class="entry-box">' +
+      '<span class="entry">' + highlightQuery(query, makeImplicitSearchLinks(htmlEscape(res.word))) + "</span>" +
+      ' <span class="kind"><span class="bracket">{</span>'
+      + htmlEscape(res.cat)
+      + '<span class="bracket">}</span></span>' +
+      ' <span class="separator">:</span> ' +
+      '</dt>';
+  }
+
+  function createSingleTrans(trans) {
+    return "<span class=\"ol-level\">" + trans + "</span>";
+  }
+
   /*
   * main body
   */
   function linesToHtml(lines, query) {
     var buffer      = [];
-    var catBuffer   = [];
+    var wordBuffer  = [];
     var transBuffer = [];
 
     var currentWord = null;
     var currentCat  = null;
 
-    function createEntryTitle(res, query) {
-      return '<dt class="entry-box">' +
-        '<span class="entry">' + highlightQuery(query, makeImplicitSearchLinks(htmlEscape(res.word))) + "</span>" +
-        ' <span class="kind"><span class="bracket">{</span>'
-        + htmlEscape(res.cat)
-        + '<span class="bracket">}</span></span>' +
-        ' <span class="separator">:</span> ' +
-        '</dt>';
+    function dumpCurrentWord() {
+      if (wordBuffer.length) {
+        buffer.push(wordBuffer.join(""));
+        wordBuffer.length = 0;
+      }
     }
 
-    function createSingleTrans(trans) {
-      return "<span class=\"ol-level\">" + trans + "</span>";
+    function dumpCurrentCat() {
+      if (transBuffer.length) {
+        wordBuffer.push('<span class="kind">' + htmlEscape(currentCat) + '</span>');
+
+        wordBuffer.push(transBuffer.length > 1
+                        ? ("<ol>" + transBuffer.map(function (trans) {
+                          return "<li>" + trans + "</li>";
+                        }).join("\n") + "</ol>")
+                        : createSingleTrans(transBuffer[0]));
+        transBuffer.length = 0;
+      }
     }
 
     try {
@@ -258,37 +278,28 @@ var linesToHtml = (function () {
           continue;
         }
 
+        console.dir(res);
+
         if (currentWord !== res.word) {
           // end of the current word
-          if (catBuffer.length) {
-            buffer.push(catBuffer.join(""));
-            catBuffer.length = 0;
-          }
+          dumpCurrentCat();
+          dumpCurrentWord();
 
           // begin new word
           currentWord = res.word;
-          console.log("begin " + currentWord);
           buffer.push("<p class=\"word\">" + highlightQuery(
             query,
             makeImplicitSearchLinks(htmlEscape(currentWord))
           ) + "</p>");
+
+          currentCat = null;
         }
 
         if (!res.cat || currentCat !== res.cat) {
-          // end the current kind
-          if (transBuffer.length) {
-            catBuffer.push('<span class="kind">' + htmlEscape(currentCat) + '</span>');
-
-            catBuffer.push(transBuffer.length > 1
-                           ? ("<ol>" + transBuffer.map(function (trans) {
-                             return "<li>" + trans + "</li>";
-                           }).join("\n") + "</ol>")
-                           : createSingleTrans(transBuffer[0]));
-            transBuffer.length = 0;
-          }
-
+          // end of the current kind
+          dumpCurrentCat();
+          // begin new kind
           currentCat = res.cat;
-          console.log("begin " + currentWord + "'s " + currentCat);
         }
 
         if (res.cat) {
@@ -297,10 +308,10 @@ var linesToHtml = (function () {
         } else {
           // no kind
           if (res.trivial) {
-            // trivial must be the first
-            catBuffer.unshift(res.trans);
+            // trivial must be the head
+            wordBuffer.unshift(res.trans);
           } else {
-            catBuffer.push(createSingleTrans(res.trans));
+            wordBuffer.push(createSingleTrans(res.trans));
           }
         }
       }
@@ -308,9 +319,8 @@ var linesToHtml = (function () {
       console.log("error :: " + x);
     }
 
-    // XXX: really?
-    if (catBuffer.length)
-      buffer.push(catBuffer.join(""));
+    dumpCurrentCat();
+    dumpCurrentWord();
 
     return buffer.join("\n");
   }

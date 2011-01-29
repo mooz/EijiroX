@@ -85,6 +85,11 @@ h1 {
   border:solid #ccc 1px;
 }
 
+#results .kind {
+  display : inline-block;
+  margin  : 3px 0;
+}
+
 #results dd, dt {
   padding-top: 0.1em;
   padding-bottom: 0.1em;
@@ -110,7 +115,8 @@ h1 {
 }
 
 #results ul {
-  padding-left : 3px;
+  padding-left : 0px;
+  margin       : 2px 0;
 }
 
 #results ol {
