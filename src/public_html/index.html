@@ -32,6 +32,18 @@
         <li><label for="noruby">ルビを表示しない</label> <input type="checkbox" id="noruby" name="noruby"/></li>
         <li><label for="largefont">小さいフォントを使わない（普通サイズで表示）</label> <input type="checkbox" id="largefont" name="largefont"/></li>
       </ul>
+      <h2>検索の挙動</h2>
+      <ul>
+          <li><label for="search_delay">キーが入力されてから検索を開始するまでの遅延時間 (ミリ秒)</label>
+              <input id="search_delay"
+                     type="number"
+                     min="0"
+                     max="2000"
+                     step="1"
+                     value="100"
+                     onblur="searchDelay.changeWaitTime(this.value);" />
+          </li>
+      </ul>
     </div>
     <div id="main">
       <div id="inputbox">
