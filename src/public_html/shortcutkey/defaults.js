@@ -1,4 +1,10 @@
 (function () {
+    var Root = /BackCompat/.test(document.compatMode) ? document.body : document.documentElement;
+
+    function toArray(al) {
+        return Array.prototype.slice.call(al);
+    }
+
     Action.addAction("scroll_down", function (arg) {
         window.scrollBy(0, 100);
     }, "下へスクロール");
