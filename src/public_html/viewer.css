@@ -29,6 +29,11 @@ h1 {
   font-size: small;
 }
 
+#custom-style {
+  width: 100%;
+  height: 15em;
+}
+
 #inputbox {
   width: 100%;
   text-align: center
@@ -130,17 +135,17 @@ h1 {
 }
 
 @font-face{
-  font-family:CharisSIL;
+  font-family: cs_phonetic;
   font-style: normal;
-  src:url("fonts/CharisSILR.ttf");
+  src:url("fonts/cs_phonetic.ttf");
 }
 @font-face{
-  font-family:CharisSIL;
+  font-family: cs_phonetic;
   font-style: italic;
-  src:url("fonts/CharisSILI.ttf");
+  src:url("fonts/csi_phonetic.ttf");
 }
 #results .phonetic {
-  font-family: CharisSIL, Helvetica, Arial, sans-serif;
+  font-family: cs_phonetic, Helvetica, Arial, sans-serif;
   font-size: 110%;
 }
 #results .query-highlight {
