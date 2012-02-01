@@ -2,7 +2,7 @@
 
 cd `dirname $0`
 
-if [ "$1" == "nozip" ]; then ZIP=""; else ZIP="yes"; fi
+if [ "$1" = "nozip" ]; then ZIP=""; else ZIP="yes"; fi
 
 # chrome
 echo "*** Creating .crx"
